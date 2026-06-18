@@ -2,6 +2,6 @@
 # Las líneas que empiezan con # y las vacías se ignoran.
 # Edita esta lista para agregar o quitar suscriptores de prueba.
 
-# correo1@ejemplo.com
-# correo2@ejemplo.com
-# correo3@ejemplo.com
+victda01@gmail.com
+mcl200112@gmail.com
+jimegc2002@gmail.com
