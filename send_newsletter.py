@@ -36,6 +36,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 def latest_edition():
     files = sorted(glob.glob(os.path.join(HERE, "editions", "cineradar_*.html")))
+    files = [f for f in files if not f.endswith("_email.html")]
     if not files:
         sys.exit("No hay ediciones en editions/. Genera una primero.")
     return files[-1]
@@ -90,8 +91,10 @@ def emailize(html):
     return html
 
 
-def build_html(edition_html, browser_url, num):
-    edition_html = emailize(edition_html)
+def build_html(edition_html, browser_url, num, already_email=False):
+    # Si ya es una versión nativa para email (_email.html) no se transforma.
+    if not already_email:
+        edition_html = emailize(edition_html)
     banner = f"""
     <div style="background:#1A252C;padding:16px;text-align:center;font-family:Inter,Arial,sans-serif;">
       <a href="{browser_url}"
@@ -117,12 +120,18 @@ def main():
         sys.exit("Faltan GMAIL_USER y/o GMAIL_APP_PASSWORD en el entorno.")
 
     edition = sys.argv[1] if len(sys.argv) > 1 else latest_edition()
-    with open(edition, encoding="utf-8") as f:
+
+    # Prefiere la versión nativa para email ({base}_email.html) si existe;
+    # se ve ordenada en Gmail/Outlook. Si no, transforma la versión web.
+    email_variant = re.sub(r"\.html$", "_email.html", edition)
+    already_email = os.path.exists(email_variant)
+    source = email_variant if already_email else edition
+    with open(source, encoding="utf-8") as f:
         edition_html = f.read()
 
     num = edition_number(edition)
     browser_url = view_in_browser_url(edition)
-    html = build_html(edition_html, browser_url, num)
+    html = build_html(edition_html, browser_url, num, already_email=already_email)
     recipients = load_recipients()
 
     msg = EmailMessage()
