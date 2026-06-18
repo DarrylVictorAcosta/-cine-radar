@@ -1,0 +1,21 @@
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Claude Code (sesiones locales, no se versionan)
+.claude/settings.local.json
+.claude/projects/
+
+# Secretos — nunca subir claves de API reales
+.env
+.env.local
+secrets.json
+
+# Temporales
+*.tmp
+*.log
