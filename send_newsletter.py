@@ -67,7 +67,31 @@ def edition_number(edition_path):
     return m.group(1) if m else "???"
 
 
+def emailize(html):
+    """Convierte el HTML (pensado para navegador) en una versión que se ve
+    completa dentro del correo: sin JS, todo visible, barras RT rellenas."""
+    # 1. Quita los <script> (los clientes de email no ejecutan JS).
+    html = re.sub(r"<script\b[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE)
+    # 2. Rellena cada barra del RT Tracker con su ancho real (lo hacía el JS).
+    html = re.sub(
+        r'(class="cr-rt-bar-fill[^"]*")\s+data-w="(\d+)"',
+        r'\1 data-w="\2" style="width:\2%"',
+        html,
+    )
+    # 3. Fuerza visibilidad de las secciones con animación y oculta el grano
+    #    (position:fixed se rompe en email). Se inyecta justo antes de </style>.
+    overrides = (
+        ".reveal{opacity:1 !important;transform:none !important;}"
+        ".cr-grain{display:none !important;}"
+        ".cr-hero-img{animation:none !important;}"
+    )
+    if "</style>" in html:
+        html = html.replace("</style>", overrides + "</style>", 1)
+    return html
+
+
 def build_html(edition_html, browser_url, num):
+    edition_html = emailize(edition_html)
     banner = f"""
     <div style="background:#1A252C;padding:16px;text-align:center;font-family:Inter,Arial,sans-serif;">
       <a href="{browser_url}"
